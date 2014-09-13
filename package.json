@@ -1,0 +1,16 @@
+{
+  "name": "fission-localstorage",
+  "devDependencies": {
+    "localStorage": "^1.0.2",
+    "mocha": "^1.21.4",
+    "should": "^4.0.4"
+  },
+  "repository": "git://github.com/fissionjs/fission-localstorage.git",
+  "scripts": {
+    "test": "mocha --compilers coffee:coffee-script/register"
+  },
+  "dependencies": {
+    "coffee-script": "^1.7.1"
+  },
+  "main": "./index.js"
+}
