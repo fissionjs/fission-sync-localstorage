@@ -7,10 +7,7 @@
   },
   "repository": "git://github.com/fissionjs/fission-localstorage.git",
   "scripts": {
-    "test": "mocha --compilers coffee:coffee-script/register"
-  },
-  "dependencies": {
-    "coffee-script": "^1.7.1"
+    "test": "mocha"
   },
   "main": "./index.js"
 }
