@@ -1,93 +1,88 @@
-var fissionLocal, localStorage, should;
+/*globals before,it*/
+'use strict';
 
-should = require('should');
-
-localStorage = require('localStorage');
-
-fissionLocal = require('../');
+var should = require('should');
+var localStorage = require('localStorage');
+var fissionLocal = require('../');
 
 describe('fission-localstorage', function() {
-  beforeEach(function() {
+
+  before(function() {
     global.window = {};
-    return global.window.localStorage = localStorage;
+    global.window.localStorage = localStorage;
   });
+
+  var testModel = {};
+
   it('should create', function(done) {
-    return fissionLocal('create', {
-      name: "data1"
-    }, {
-      collection: 'Items'
-    }, function(data) {
-      data.should.not.be["null"];
-      data.name.should.equal('data1');
-      data.id.should.exist;
-      return done();
-    });
-  });
-  it('should read', function(done) {
-    return fissionLocal('create', {
-      name: "data2"
-    }, {
-      collection: 'Items'
-    }, function(data) {
-      return fissionLocal('read', {
-        id: data.id
-      }, {
-        collection: 'Items'
-      }, function(out) {
-        data.should.not.be["null"];
-        data.name.should.equal('data2');
-        data.id.should.exist;
+    fissionLocal('create', {
+      name: 'data1',
+      url: 'test',
+      _values: {
+        name: 'data1'
+      }
+    },
+    {
+      success: function(data){
+        should.exist(data);
+        should.exist(data.id);
+        String(data.name).should.equal('data1');
+        testModel = data;  // Set fixture for following tests
         return done();
-      });
+      }
     });
   });
+
+  it('should read', function(done) {
+    fissionLocal('read', {
+      id: testModel.id,
+      url: testModel.url
+    },
+    {
+      success: function(data){
+        should.exist(data);
+        should.exist(data.id);
+        String(data.name).should.equal('data1');
+        String(data.id).should.equal(testModel.id);
+        String(data.url).should.equal(testModel.url);
+        return done();
+      }
+    });
+  });
+
   it('should update', function(done) {
-    return fissionLocal('create', {
-      name: "data3"
-    }, {
-      collection: 'Items'
-    }, function(data) {
-      return fissionLocal('update', {
-        id: data.id,
+    fissionLocal('update', {
+      id: testModel.id,
+      name: 'new-data',
+      url: testModel.url,
+      _values: {
         name: 'new-data'
-      }, {
-        collection: 'Items'
-      }, function(out) {
-        return fissionLocal('read', {
-          id: data.id
-        }, {
-          collection: 'Items'
-        }, function(data) {
-          data.should.not.be["null"];
-          data.name.should.equal('new-data');
-          data.id.should.exist;
-          return done();
-        });
-      });
+      }
+    },
+    {
+      success: function(data){
+        should.exist(data);
+        should.exist(data.id);
+        String(data.name).should.equal('new-data');
+        String(data.id).should.equal(testModel.id);
+        String(data.url).should.equal(testModel.url);
+        return done();
+      }
     });
   });
-  return it('should delete', function(done) {
-    return fissionLocal('create', {
-      name: "data4"
-    }, {
-      collection: 'Items'
-    }, function(data) {
-      return fissionLocal('delete', {
-        id: data.id,
-        name: 'new-data'
-      }, {
-        collection: 'Items'
-      }, function(out) {
-        return fissionLocal('read', {
-          id: data.id
-        }, {
-          collection: 'Items'
-        }, function(data) {
-          should.not.exist(data);
-          should.equal(data, null);
-          return done();
-        });
-      });
+
+  it('should delete', function(done) {
+
+    fissionLocal('delete', {
+      id: testModel.id,
+      url: testModel.url
+    },
+    {
+      success: function(data){
+        should.not.exist(data);
+        should.equal(data, null);
+        return done();
+      }
     });
   });
 });
