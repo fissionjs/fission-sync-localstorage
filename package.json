@@ -1,6 +1,6 @@
 {
   "name": "fission-sync-localstorage",
-  "description": "localStorage sync adapter for fissionjs",
+  "description": "localStorage sync adapter for Fission",
   "version": "0.0.1",
   "homepage": "http://github.com/fissionjs/fission-sync-localstorage",
   "author": "Steve Lacy <me@slacy.me> (http://slacy.me)",
