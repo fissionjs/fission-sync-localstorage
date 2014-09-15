@@ -1,23 +1,22 @@
-var PLUGIN_NAME, actions, createId, plugin;
+/*globals window,module*/
+'use strict';
 
-PLUGIN_NAME = 'fission-localstorage';
+var PLUGIN_NAME = 'fission-sync-localstorage';
 
-createId = function() {
-  var machine, pid, timestamp;
-  timestamp = new Date().getTime();
-  machine = Math.floor(Math.random() * 16777216);
-  pid = Math.floor(Math.random() * 32767);
-  return "00000000".substr(0, 8 - timestamp.length) + timestamp + "000000".substr(0, 6 - machine.length) + machine + "0000".substr(0, 4 - pid.length) + pid;
+var createId = function() {
+  var timestamp = new Date().getTime();
+  var machine = Math.floor(Math.random() * 16777216);
+  var pid = Math.floor(Math.random() * 32767);
+  return '00000000'.substr(0, 8 - timestamp.length) + timestamp + '000000'.substr(0, 6 - machine.length) + machine + '0000'.substr(0, 4 - pid.length) + pid;
 };
 
-actions = {
+var actions = {
   store: function() {
     var store;
     store = window.localStorage;
     if (!store) {
-      throw "" + PLUGIN_NAME + ": localStorage not supported by Browser";
+      throw PLUGIN_NAME + ': localStorage not supported by Browser';
     }
-    console.log(store);
     return store;
   },
   serialize: function(model) {
@@ -26,58 +25,86 @@ actions = {
   deserialize: function(model) {
     return JSON.parse(model);
   },
-  find: function(model, opts) {
-    console.log(model)
-    console.log(opts.collection)
-    return this.deserialize(this.store().getItem("" + opts.collection + "-" + model.id));
+  find: function(model) {
+    return this.deserialize(this.store().getItem(model.url + '/' + model.id));
   }
 };
 
-plugin = {
-  create: function(model, opts) {
-    if (model.id == null) {
+var plugin = {
+  create: function(model, cb) {
+    if (!model.id) {
       model.id = createId();
     }
-    actions.store().setItem("" + opts.collection + "-" + model.id, actions.serialize(model));
-    return actions.find(model, opts);
+    if (model.url.indexOf(model.id) > -1) {
+      model.url = model.url.replace('/'+model.id, '');
+    }
+    model._values.url = model.url;
+    model._values.id = model.id;
+
+    actions.store().setItem(model.url + '/' + model.id, actions.serialize(model._values));
+    if (cb) {
+      return cb(null, actions.find(model));
+    }
+    return actions.find(model);
   },
-  readAll: function(model, opts) {
-    //actions.store().forEach(item) {   
-    //}
+  readAll: function(model, cb) {
+    var items = [];
+    var count = 0;
+    for (var i in actions.store()) {
+      count ++;
+      var item = actions.store().getItem(i);
+      item = actions.deserialize(item);
+      if (item.url === model.url) {
+        items.push(item);
+      }
+      if (count === actions.store().length) {
+        return cb(null, items);
+      }
+    }
   },
-  read: function(model, opts) {
-    console.log(actions.find(model, opts))
-    return actions.find(model, opts);
+  read: function(model, cb) {
+    return cb(null, actions.find(model));
   },
-  update: function(model, opts) {
-    return this.create(model, opts);
+  update: function(model, cb) {
+    var item = this.create(model);
+    return cb(null, item);
   },
-  "delete": function(model, opts) {
-    return actions.store().removeItem("" + opts.collection + "-" + model.id);
+  'delete': function(model, cb) {
+    if (model.url.indexOf(model.id) === -1) {
+      model.url = model.url + '/'+model.id;
+    }
+    actions.store().removeItem(model.url);
+    return cb(null, null);
   }
 };
 
-module.exports = function(method, model, options, cb) {
-  console.log(method, model, options)
-  var run;
-  if (plugin[method] == null) {
-    throw "" + PLUGIN_NAME + ": undefined method: " + method;
+module.exports = function(method, model, options) {
+
+  if (!plugin[method]) {
+    throw PLUGIN_NAME + ': undefined method: ' + method;
   }
-  if (model == null) {
-    throw "" + PLUGIN_NAME + ": model is required";
+  if (!model) {
+    throw PLUGIN_NAME + ': model is required';
+  }
+  if (!model.url) {
+    throw PLUGIN_NAME + ': model.url is required to be set to the collection name';
   }
 
-  if (!model.id) {
+
+  if (!model.id && method === 'read') {
     method = 'readAll';
   }
 
-  //if (options.collection == null) {
-  //  throw "" + PLUGIN_NAME + ": options.collection is required";
-  //}
-  options.collection = 'todoz'
-  run = plugin[method](model, options);
-  if (cb) {
-    return cb(run);
+  model.url = model.url;
+  if (typeof model.url === 'function') {
+    model.url = model.url();
   }
-  return run;
+
+  plugin[method](model, function(err, data) {
+    if (err) {
+      return options.error(data);
+    }
+    return options.success(data);
+  });
+
 };
