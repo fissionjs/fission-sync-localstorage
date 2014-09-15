@@ -1,13 +1,35 @@
 {
-  "name": "fission-localstorage",
+  "name": "fission-sync-localstorage",
+  "description": "localStorage sync adapter for fissionjs",
+  "version": "0.0.1",
+  "homepage": "http://github.com/fissionjs/fission-sync-localstorage",
+  "author": "Steve Lacy <me@slacy.me> (http://slacy.me)",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/fissionjs/fission-sync-localstorage.git"
+  },
   "devDependencies": {
     "localStorage": "^1.0.2",
     "mocha": "^1.21.4",
     "should": "^4.0.4"
   },
-  "repository": "git://github.com/fissionjs/fission-localstorage.git",
-  "scripts": {
-    "test": "mocha"
+  "engines": {
+    "node": ">= 0.9.0"
   },
+  "scripts": {
+    "test": "mocha --reporter spec"
+  },
+  "licenses": {
+    "type": "MIT",
+    "url": "https://github.com/fissionjs/fission-sync-localstorage/raw/master/LICENSE"
+  },
+  "bugs": {
+    "url": "https://github.com/fissionjs/fission-sync-localstorage/issues"
+  },
+  "keywords": [
+    "fission",
+    "localStorage",
+    "fission-plugin"
+  ],
   "main": "./index.js"
 }
