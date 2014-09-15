@@ -7,7 +7,10 @@ var createId = function() {
   var timestamp = new Date().getTime();
   var machine = Math.floor(Math.random() * 16777216);
   var pid = Math.floor(Math.random() * 32767);
-  return '00000000'.substr(0, 8 - timestamp.length) + timestamp + '000000'.substr(0, 6 - machine.length) + machine + '0000'.substr(0, 4 - pid.length) + pid;
+  var id = '00000000'.substr(0, 8 - timestamp.length) + timestamp;
+  id += '000000'.substr(0, 6 - machine.length) + machine;
+  id += '0000'.substr(0, 4 - pid.length) + pid;
+  return id;
 };
 
 var actions = {
