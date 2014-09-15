@@ -5,7 +5,7 @@
 
 
 ## Install
-`shell npm install fission-sync-localstorage --save`
+`npm install fission-sync-localstorage --save`
 
 ## Example
 
